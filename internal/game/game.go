@@ -1,29 +1,47 @@
 package game
 
 import (
+	"fmt"
+
+	"github.com/artromone/ginsengine/internal/core"
 	"github.com/artromone/ginsengine/internal/scenes"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Game struct {
-	currentScene Scene
+	currentScene core.Scene
+	nextScene    core.Scene
+	width        int
+	height       int
 }
 
-type Scene interface {
-	Update() Scene
-	Draw(screen *ebiten.Image)
-}
-
-func NewGame() *Game {
-	return &Game{
-		currentScene: scenes.NewTitleScene(),
+func NewGame(width, height int) *Game {
+	g := &Game{
+		width:  width,
+		height: height,
 	}
+	g.currentScene = scenes.NewTitleScene(width, height)
+	g.currentScene.OnEnter()
+	return g
 }
 
 func (g *Game) Update() error {
-	if nextScene := g.currentScene.Update(); nextScene != nil {
-		g.currentScene = nextScene
+	if g.nextScene != nil {
+		g.currentScene.OnExit()
+		g.currentScene = g.nextScene
+		g.currentScene.OnEnter()
+		g.nextScene = nil
 	}
+
+	nextScene, err := g.currentScene.Update()
+	if err != nil {
+		return fmt.Errorf("scene update error: %w", err)
+	}
+
+	if nextScene != nil {
+		g.nextScene = nextScene
+	}
+
 	return nil
 }
 
@@ -32,5 +50,5 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return 1280, 720
+	return g.width, g.height
 }

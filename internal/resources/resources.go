@@ -1,45 +1,69 @@
 package resources
 
 import (
-	"image"
 	"image/color"
 	"log"
+	"os"
 	"sync"
 
-	"golang.org/x/image/font"
-
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"github.com/hajimehoshi/ebiten/v2/text"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/opentype"
 )
 
-var fontCache sync.Map
+type ResourceManager struct {
+	fontCache sync.Map
+	imgCache  sync.Map
+}
 
-func LoadFont(path string, size float64) font.Face {
-	key := path + ":" + string(size)
-	if v, ok := fontCache.Load(key); ok {
+var (
+	instance *ResourceManager
+	once     sync.Once
+)
+
+func GetInstance() *ResourceManager {
+	once.Do(func() {
+		instance = &ResourceManager{}
+	})
+	return instance
+}
+
+func (rm *ResourceManager) LoadFont(path string, size float64) font.Face {
+	key := path + ":" + string(rune(size))
+	if v, ok := rm.fontCache.Load(key); ok {
 		return v.(font.Face)
 	}
 
-	tt, err := text.OpenFont(path)
+	fontBytes, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to load font %s: %v", path, err)
 	}
 
-	face, err := text.NewGoTextFace(tt, text.GoTextFaceOptions{
-		Size: size,
+	tt, err := opentype.Parse(fontBytes)
+	if err != nil {
+		log.Fatalf("failed to parse font: %v", err)
+	}
+
+	face, err := opentype.NewFace(tt, &opentype.FaceOptions{
+		Size:    size,
+		DPI:     72,
+		Hinting: font.HintingFull,
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to create font face: %v", err)
 	}
 
-	fontCache.Store(key, face)
+	rm.fontCache.Store(key, face)
 	return face
 }
 
-func RenderText(face font.Face, text string, clr color.Color) *ebiten.Image {
-	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
-	text.Draw(img, text, face, image.Point{}, color.Black, text.AlignmentLeft)
+func (rm *ResourceManager) RenderText(face font.Face, str string, clr color.Color) *ebiten.Image {
+	bounds := text.BoundString(face, str)
+	w := bounds.Dx()
+	h := bounds.Dy()
 
-	ebitenImage := ebiten.NewImageFromImage(img)
-	return ebitenImage
+	img := ebiten.NewImage(w, h)
+	text.Draw(img, str, face, -bounds.Min.X, -bounds.Min.Y, clr)
+	return img
 }

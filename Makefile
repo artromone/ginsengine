@@ -1,22 +1,24 @@
 BINARY=ginsengine
 ASSETS=assets
+BUILD_DIR=./build
 
 build:
-	go build -o $(BINARY) ./cmd/$(BINARY)
+	mkdir -p $(BUILD_DIR)
+	go build -o $(BUILD_DIR)/$(BINARY) ./cmd/$(BINARY)
 
 build-windows:
-	GOOS=windows GOARCH=amd64 go build -o $(BINARY).exe ./cmd/$(BINARY)
+	GOOS=windows GOARCH=amd64 go build -o $(BUILD_DIR)/$(BINARY)-windows.exe ./cmd/$(BINARY)
 
 build-linux:
-	GOOS=linux GOARCH=amd64 go build -o $(BINARY)-linux ./cmd/$(BINARY)
+	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/$(BINARY)-linux ./cmd/$(BINARY)
 
-run:
-	go run ./cmd/$(BINARY)
+run: build
+	./$(BUILD_DIR)/$(BINARY)
 
-assets:
-	cp -r $(ASSETS) $(BINARY)_assets
+assets: build
+	cp -r $(ASSETS) $(BUILD_DIR)/$(BINARY)_assets
 
 clean:
-	rm -f $(BINARY) $(BINARY).exe $(BINARY)-linux
+	rm -rf $(BUILD_DIR)
 
-.PHONY: build build-windows build-linux run clean
+.PHONY: build build-windows build-linux run clean assets
