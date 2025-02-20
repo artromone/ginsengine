@@ -28,7 +28,7 @@ func NewGameScene(width, height int) core.Scene {
 
 func (s *GameScene) OnEnter() {
 	rm := resources.GetInstance()
-	s.gameFont = rm.LoadFont("resources/fonts/pressstart2p.ttf", 20)
+	s.gameFont = rm.LoadFont("assets/fonts/pressstart2p.ttf", 20)
 	s.updateScoreText()
 }
 

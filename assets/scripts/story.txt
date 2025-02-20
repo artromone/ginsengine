@@ -1,0 +1,32 @@
+# Example visual novel script
+# Define characters
+CHARACTER: Alice, assets/characters/alice.png
+CHARACTER: Bob, assets/characters/bob.png
+
+# Set initial background
+BACKGROUND: assets/backgrounds/classroom.png
+
+# Narrator introduction
+NARRATOR: It was a quiet afternoon in the classroom.
+
+# Center text for dramatic effect
+CENTER: Chapter 1: A New Beginning
+
+# Character dialogue
+Alice: Hi there! I'm new to this class.
+POSITION: Alice, 100, 300
+
+Bob: Welcome! I'll be happy to show you around.
+POSITION: Bob, 500, 300
+
+NARRATOR: The two students quickly became friends.
+
+# Change background
+BACKGROUND: assets/backgrounds/courtyard.png
+
+CENTER: Later that day...
+
+Alice: Thanks for helping me today!
+Bob: Anytime! See you tomorrow!
+
+NARRATOR: And so began a wonderful friendship...

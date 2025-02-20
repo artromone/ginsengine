@@ -52,3 +52,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return g.width, g.height
 }
+
+func (g *Game) SetScene(scene core.Scene) {
+	if g.currentScene != nil {
+		g.currentScene.OnExit()
+	}
+	g.nextScene = scene
+}
